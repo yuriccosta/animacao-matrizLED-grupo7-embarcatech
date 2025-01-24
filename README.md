@@ -1,6 +1,18 @@
 # Animação de Matriz de LEDs - Subgrupo 7 - Embarcatech
 Geração de animações em uma matriz de LEDs 5x5. Com o auxílio do simulador de eletrônica Wokwi, utilize o Raspberry Pi Pico W e um teclado matricial 4x4 (ilustrado na Figura 1) para gerar informações visuais em uma matriz de LEDs Coloridos (5x5 WS2812)
 
+### Tarefas 
+
+- [ ] Tarefa 01
+- [ ] Tarefa 02
+- [ ] Tarefa 03
+- [ ] Tarefa 04
+- [ ] Tarefa 05
+- [ ] Tarefa 06
+- [ ] Tarefa 07
+- [ ] Tarefa 08
+- [ ] Tarefa 09
+
 ### Os requisitos para a realização desta tarefa são:
 
 1) As teclas de 0 a 9 do teclado matricial, caso acionadas, o
