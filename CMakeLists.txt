@@ -60,6 +60,7 @@ target_include_directories(animacao_matriz PRIVATE
 target_link_libraries(animacao_matriz 
         hardware_pio
         hardware_clocks
+        hardware_pwm
         )
 
 pico_add_extra_outputs(animacao_matriz)
