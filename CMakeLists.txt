@@ -55,7 +55,8 @@ target_include_directories(animacao_matriz PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(animacao_matriz 
-        
+        hardware_pwm
+
         )
 
 pico_add_extra_outputs(animacao_matriz)

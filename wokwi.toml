@@ -1,0 +1,5 @@
+[wokwi]
+version = 1
+firmware = 'build/animacao_matriz.uf2'
+elf = 'build/animacao_matriz.elf'
+gdbServerPort=3333
