@@ -40,6 +40,9 @@ add_executable(animacao_matriz animacao_matriz.c )
 pico_set_program_name(animacao_matriz "animacao_matriz")
 pico_set_program_version(animacao_matriz "0.1")
 
+# Generate PIO header
+pico_generate_pio_header(animacao_matriz ${CMAKE_CURRENT_LIST_DIR}/ws2818b.pio)
+
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(animacao_matriz 0)
 pico_enable_stdio_usb(animacao_matriz 1)
@@ -55,8 +58,9 @@ target_include_directories(animacao_matriz PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(animacao_matriz 
+        hardware_pio
+        hardware_clocks
         hardware_pwm
-
         )
 
 pico_add_extra_outputs(animacao_matriz)
