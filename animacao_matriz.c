@@ -1,6 +1,5 @@
-// Anibal Maldonado: Código principal - menú  - https://github.com/PhD-Anibal
-// Anibal Maldonado: criação do diagram.json - https://github.com/PhD-Anibal
-// Anibal Maldonado: botão 1 - Animação - Tetris - https://github.com/PhD-Anibal
+// Anibal Maldonado: Código principal  - https://github.com/PhD-Anibal
+// Anibal Maldonado: LED Vermelho ao apertar 'A' - https://github.com/PhD-Anibal
 
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -10,180 +9,12 @@
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include "hardware/adc.h"
-#include "pico/bootrom.h"
-
-//arquivo .pio
-#include "animacao_matriz.pio.h"
-
-
 
 #define BUZZER1 28              // define o pino 28 = Buzzer
 
 // Definições de constantes
 #define LED_COUNT 25                // Número de LEDs na matriz
 #define LED_PIN 7                   // Pino GPIO conectado aos LEDs
-
-
-//função Anibal
-//matrix para criar imagem na matriz de led - 1
-
-int desenho[15][25] =   {{0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {2, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {2, 0, 0, 0, 0,
-                        2, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {2, 2, 0, 0, 0,
-                        2, 0, 0, 0, 0, 
-                        2, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        2, 2, 2, 0, 0, 
-                        0, 0, 2, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 2, 2, 2, 0, 
-                        0, 0, 0, 2, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {3, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {3, 3, 0, 0, 0,
-                        3, 0, 0, 0, 0, 
-                        0, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        3, 3, 0, 0, 0, 
-                        3, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        3, 3, 0, 0, 0, 
-                        0, 0, 0, 0, 0,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        3, 3, 0, 0, 0,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 2, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 3, 0, 0, 0,
-                        3, 1, 0, 0, 4,
-                        0, 0, 0, 0, 0},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 0,
-                        0, 3, 0, 0, 0,
-                        3, 1, 0, 0, 4},
-
-   			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0}};
-
-
-// Índices na ordem desejada
-int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                    
-
-//imprimir valor binário
-void imprimir_binario(int num) {
- int i;
- for (i = 31; i >= 0; i--) {
-  (num & (1 << i)) ? printf("1") : printf("0");
- }
-}
-
-//rotina da interrupção
-static void gpio_irq_handler(uint gpio, uint32_t events){
-    printf("Interrupção ocorreu no pino %d, no evento %d\n", gpio, events);
-    printf("HABILITANDO O MODO GRAVAÇÃO");
-	reset_usb_boot(0,0); //habilita o modo de gravação do microcontrolador
-}
-
-//rotina para definição da intensidade de cores do led
-uint32_t matrix_rgb(double b, double r, double g)
-{
-  unsigned char R, G, B;
-  R = r * 255;
-  G = g * 255;
-  B = b * 255;
-  return (G << 24) | (R << 16) | (B << 8);
-}
-
-
-//rotina para acionar a matrix de leds - ws2812b
-//void desenho_pio(int *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b){
-void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double r, double g, double b) {
-    for (int16_t k = 1; k < 16; k++) {
-        for (int16_t i = 0; i < LED_COUNT; i++) {
-            //if (i%2==0)
-            //{
-                switch (desenho[k][ordem[24-i]]) {
-                    case 0: 
-                        valor_led = matrix_rgb(b=0.0, r=0.0, g=0.0);
-                        break;
-                    case 1: 
-                        valor_led = matrix_rgb(b=1, r=0.0, g=0.0);
-                        break;
-                    case 2:
-                        valor_led = matrix_rgb(b=0.0, r=1, g=0.0);
-                        break;
-                    case 3:
-                        valor_led = matrix_rgb(b=0.0, r=0.0, g=1);
-                        break;
-                    case 4:
-                        valor_led = matrix_rgb(b=1, r=1, g=1);
-                        break;
-                }
-
-                pio_sm_put_blocking(pio, sm, valor_led);
-        }
-        imprimir_binario(valor_led);
-        sleep_ms(500);
-    }
-}
-
-// fim função Anibal
-
 
 // Estrutura para representar um pixel com componentes RGB
 struct pixel_t{ 
@@ -354,29 +185,6 @@ int main() {
     gpio_set_dir(BUZZER1, GPIO_OUT);
     init_pwm(BUZZER1);
 
-    //inicio parte da função Anibal
-    PIO pio = pio0; 
-    bool ok;
-    uint16_t i;
-    uint32_t valor_led;
-    double r = 0.0, b = 0.0 , g = 0.0;
-
-    //coloca a frequência de clock para 128 MHz, facilitando a divisão pelo clock
-    ok = set_sys_clock_khz(128000, false);
-
-    // Inicializa todos os códigos stdio padrão que estão ligados ao binário.
-    stdio_init_all();
-
-    printf("iniciando a transmissão PIO");
-    if (ok) printf("clock set to %ld\n", clock_get_hz(clk_sys));
-
-    //configurações da PIO
-    uint offset = pio_add_program(pio, &animacao_matriz_program);
-    uint sm = pio_claim_unused_sm(pio, true);
-    animacao_matriz_program_init(pio, sm, offset, LED_PIN);
-    // fim parte da função Anibal
-
-
 while (true) {
     char key = get_key(); // Lê a tecla pressionada
     if (key) {
@@ -418,8 +226,7 @@ while (true) {
 
                 break;
             case '1':
-                //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
-                desenho_pio(desenho, valor_led, pio, sm, r, g, b);
+
                 break;
             case '2':
 
