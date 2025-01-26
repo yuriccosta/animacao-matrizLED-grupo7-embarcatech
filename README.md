@@ -11,7 +11,7 @@ Geração de animações em uma matriz de LEDs 5x5. Com o auxílio do simulador 
 - [ ] Tarefa 06
 - [ ] Tarefa 07
 - [ ] Tarefa 08
-- [ ] Tarefa 09
+- [x] Tarefa 09
 
 ### Os requisitos para a realização desta tarefa são:
 

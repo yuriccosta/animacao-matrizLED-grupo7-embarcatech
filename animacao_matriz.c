@@ -8,6 +8,8 @@
 #include "ws2818b.pio.h"            // Biblioteca PIO para controle de LEDs WS2818B
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
+// Biblioteca para RESET USB
+#include "pico/bootrom.h"
 
 
 #define BUZZER1 28              // define o pino 28 = Buzzer
@@ -177,6 +179,36 @@ void canon2() {
     stop_buzzer(BUZZER1);
 }
 
+// |====================================================|
+// |                                                    |
+// |                      Animações                     |
+// |                                                    |
+// |====================================================|
+
+void Animacao_0(){    
+    acende_matrizLEDS(false, false, true, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(false, true, false, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(false, true, true, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(true, false, false, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(true, false, true, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(true, true, false, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(true, true, true, 255);
+    sleep_ms(200);
+    npClear();
+}
+
 int main() {
     stdio_init_all(); // Inicializa a comunicação serial
     init_keypad();    // Configura o teclado
@@ -184,6 +216,8 @@ int main() {
     gpio_init(BUZZER1);
     gpio_set_dir(BUZZER1, GPIO_OUT);
     init_pwm(BUZZER1);
+
+    npInit(LED_PIN); // Incializa a matriz de LEDs
 
 while (true) {
     char key = get_key(); // Lê a tecla pressionada
@@ -215,6 +249,9 @@ while (true) {
                 set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
+                
+                // Escreve a sequência mágica no endereço especial
+                reset_usb_boot(0, 0);
                 break;
             case '#':
                 canon2(); // Função específica
@@ -223,7 +260,7 @@ while (true) {
                 stop_buzzer(BUZZER1);
                 break;
             case '0':
-
+                Animacao_0();
                 break;
             case '1':
 
