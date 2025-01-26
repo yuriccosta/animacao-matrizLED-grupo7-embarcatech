@@ -17,7 +17,7 @@
 #include "pico/bootrom.h"
 
 #include "animacao_matriz.pio.h" // Biblioteca PIO para controle de LEDs WS2818B
-
+#include "tetris.h"
 
 
 #define BUZZER1 28              // define o pino 28 = Buzzer
@@ -26,101 +26,8 @@
 #define LED_COUNT 25                // Número de LEDs na matriz
 #define LED_PIN 7                   // Pino GPIO conectado aos LEDs
 
-
-//função Anibal
-//matrix para criar imagem na matriz de led - 1
-int desenho[15][25] =   {{0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {2, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {2, 0, 0, 0, 0,
-                        2, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {2, 2, 0, 0, 0,
-                        2, 0, 0, 0, 0, 
-                        2, 0, 0, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        2, 2, 2, 0, 0, 
-                        0, 0, 2, 0, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 2, 2, 2, 0, 
-                        0, 0, 0, 2, 4,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {3, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {3, 3, 0, 0, 0,
-                        3, 0, 0, 0, 0, 
-                        0, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        3, 3, 0, 0, 0, 
-                        3, 2, 2, 2, 4,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        3, 3, 0, 0, 0, 
-                        0, 0, 0, 0, 0,
-                        0, 1, 0, 2, 4,
-                        1, 1, 1, 0, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        3, 3, 0, 0, 0,
-                        0, 1, 0, 0, 4,
-                        1, 1, 1, 2, 4},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 3, 0, 0, 0,
-                        3, 1, 0, 0, 4,
-                        0, 0, 0, 0, 0},
-
-			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 0,
-                        0, 3, 0, 0, 0,
-                        3, 1, 0, 0, 4},
-
-   			            {0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0, 
-                        0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0,
-                        0, 0, 0, 0, 0}};
-                        
-// Índices na ordem desejada
-int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                  
+// Anibal Maldonado - Índices da minha matriz de desenho na ordem desejada
+int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                 
 
 //imprimir valor binário
 void imprimir_binario(int num) {
@@ -166,33 +73,6 @@ void set_buzzer_tone(uint gpio, uint freq) {
 void stop_buzzer(uint gpio) {
     uint slice_num = pwm_gpio_to_slice_num(gpio);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
-}
-
-void canon(){
-    set_buzzer_tone(BUZZER1, 395); 
-        sleep_ms(500);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 330); 
-        sleep_ms(250);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 352); 
-        sleep_ms(250);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 395); 
-        sleep_ms(500);
-        stop_buzzer(BUZZER1);
-}
-
-void canon2() {
-    set_buzzer_tone(BUZZER1, 523); // C
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-    set_buzzer_tone(BUZZER1, 523); // C
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-    set_buzzer_tone(BUZZER1, 587); // D
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
 }
 
 //rotina para acionar a matrix de leds - ws2812b
@@ -353,31 +233,30 @@ int main() {
                 case 'A': 
                     acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
                     set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)
-                    sleep_ms(500);
+                    sleep_ms(200);
                     stop_buzzer(BUZZER1);
                     break;
                 case 'B':
                     acende_matrizLEDS(0, 0, 1, 0.8, pio, sm); // Acende todos os LEDs de azul com 80% de intensidade 
                     set_buzzer_tone(BUZZER1, 494); // Frequência 494 Hz (Nota Si)
-                    sleep_ms(500);
+                    sleep_ms(200);
                     stop_buzzer(BUZZER1);
                     break;
                 case 'C':
                     acende_matrizLEDS(1, 0, 0, 0.8, pio, sm); // Acende todos os LEDs de vermelho com 80% de intensidade
                     set_buzzer_tone(BUZZER1, 523); // Frequência 523 Hz (Nota Dó)
-                    sleep_ms(500);
+                    sleep_ms(200);
                     stop_buzzer(BUZZER1);
                     break;
                 case 'D':
                     acende_matrizLEDS(0, 1, 0, 0.5, pio, sm); // Acende todos os LEDs de verde com 50% de intensidade
                     set_buzzer_tone(BUZZER1, 587); // Frequência 587 Hz (Nota Ré)
-                    sleep_ms(500);
+                    sleep_ms(200);
                     stop_buzzer(BUZZER1);
                     break;
                 case '*':
-                    canon(); // Função específica
                     set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
-                    sleep_ms(500);
+                    sleep_ms(200);
                     stop_buzzer(BUZZER1);
                     
                     // Escreve a sequência mágica no endereço especial
