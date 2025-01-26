@@ -273,7 +273,7 @@ int main() {
                     desenho_pio(desenho, valor_led, pio, sm, r, g, b);
                     break;
                 case '2':
-
+                    desenho_pio(desenho2, valor_led, pio, sm, r, g, b);
                     break;
                 case '3':
 
