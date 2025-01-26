@@ -20,14 +20,14 @@
 #include "tetris.h"
 
 
-#define BUZZER1 28              // define o pino 28 = Buzzer
+#define BUZZER1 21              // define o pino 21 = Buzzer
 
 // Definições de constantes
 #define LED_COUNT 25                // Número de LEDs na matriz
 #define LED_PIN 7                   // Pino GPIO conectado aos LEDs
 
 // Anibal Maldonado - Índices da minha matriz de desenho na ordem desejada
-int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                 
+int ordem[] = {0, 1, 2, 3, 4, 9, 8,7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15 , 20, 21, 22, 23, 24};                 
 
 //imprimir valor binário
 void imprimir_binario(int num) {
@@ -207,7 +207,7 @@ int main() {
     //inicio parte da função Anibal
     PIO pio = pio0; 
     bool ok;
-    uint16_t i;
+
     uint32_t valor_led;
     double r = 0.0, b = 0.0 , g = 0.0;
 
@@ -263,7 +263,7 @@ int main() {
                     reset_usb_boot(0, 0);
                     break;
                 case '#':
-
+                    acende_matrizLEDS(1, 1, 1, 0.2, pio, sm); // Acende todos os LEDs de branco com 20% de intensidade
                     break;
                 case '0':
                     //Animacao_0();

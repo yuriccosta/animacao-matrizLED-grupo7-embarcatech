@@ -151,8 +151,8 @@
       [ "rgb23:VSS", "gnd5:GND", "green", [ "v0" ] ],
       [ "rgb24:VSS", "gnd5:GND", "green", [ "v0" ] ],
       [ "rgb25:VSS", "gnd5:GND", "green", [ "v0" ] ],
-      [ "pico:GP28", "bz1:2", "red", [ "v0" ] ],
-      [ "pico:GND.7", "bz1:1", "black", [ "v67.51", "h134.4" ] ]
+      [ "pico:GP21", "bz1:2", "red", [ "v0" ] ],
+      [ "pico:GND.6", "bz1:1", "black", [ "v67.51", "h134.4" ] ]
     ],
     "dependencies": {}
   }
