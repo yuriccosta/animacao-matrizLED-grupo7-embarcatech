@@ -80,7 +80,7 @@ void stop_buzzer(uint gpio) {
 //rotina para acionar a matrix de leds - ws2812b
 //void desenho_pio(int *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b){
 void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double r, double g, double b) {
-    for (int16_t k = 1; k < 16; k++) {
+    for (int16_t k = 0; k < 15; k++) {
         for (int16_t i = 0; i < LED_COUNT; i++) {
                 switch (desenho[k][ordem[24-i]]) {
                     case 0: 
@@ -107,7 +107,7 @@ void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double
         set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)        
         sleep_ms(100); 
         stop_buzzer(BUZZER1);  
-        sleep_ms(frame_delay);          
+        sleep_ms(frame_delay - 100);          
     }
 }
 
