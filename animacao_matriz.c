@@ -207,76 +207,16 @@ void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double
 // fim função Anibal
 
 
-// Estrutura para representar um pixel com componentes RGB
-struct pixel_t { 
-    uint32_t G, R, B;                // Componentes de cor: Verde, Vermelho e Azul
-};
-
-typedef struct pixel_t pixel_t;     // Alias para a estrutura pixel_t
-typedef pixel_t npLED_t;            // Alias para facilitar o uso no contexto de LEDs
-
-npLED_t leds[LED_COUNT];            // Array para armazenar o estado de cada LED
-PIO np_pio;                         // Variável para referenciar a instância PIO usada
-uint sm;                            // Variável para armazenar o número do state machine usado
-
-// Função para inicializar o PIO para controle dos LEDs
-void npInit(uint pin) 
-{
-    uint offset = pio_add_program(pio0, &animacao_matriz_program); // Carregar o programa PIO
-    np_pio = pio0;                                                // Usar o primeiro bloco PIO
-
-    sm = pio_claim_unused_sm(np_pio, false);                      // Tentar usar uma state machine do pio0
-    if (sm < 0)                                                   // Se não houver disponível no pio0
-    {
-        np_pio = pio1;                                            // Mudar para o pio1
-        sm = pio_claim_unused_sm(np_pio, true);                   // Usar uma state machine do pio1
-    }
-
-    animacao_matriz_program_init(np_pio, sm, offset, pin);        // Inicializar state machine para LEDs
-
-    for (uint i = 0; i < LED_COUNT; ++i)                          // Inicializar todos os LEDs como apagados
-    {
-        leds[i].R = 0;
-        leds[i].G = 0;
-        leds[i].B = 0;
-    }
-}
-
-// Função para definir a cor de um LED específico
-void npSetLED(const uint index, const uint8_t r, const uint8_t g, const uint8_t b) 
-{
-    leds[index].R = r;                                    // Definir componente vermelho
-    leds[index].G = g;                                    // Definir componente verde
-    leds[index].B = b;                                    // Definir componente azul
-}
-
-// Função para limpar (apagar) todos os LEDs
-void npClear() 
-{
-    for (uint i = 0; i < LED_COUNT; ++i)                  // Iterar sobre todos os LEDs
-        npSetLED(i, 0, 0, 0);                             // Definir cor como preta (apagado)
-}
-
-// Função para atualizar os LEDs no hardware
-void npWrite() 
-{
-    for (uint i = 0; i < LED_COUNT; ++i)                  // Iterar sobre todos os LEDs
-    {
-        // Enviar os valores de cada componente diretamente para o PIO
-        pio_sm_put_blocking(np_pio, sm, leds[i].G);       // Enviar componente verde
-        pio_sm_put_blocking(np_pio, sm, leds[i].R);       // Enviar componente vermelho
-        pio_sm_put_blocking(np_pio, sm, leds[i].B);       // Enviar componente azul
-    }
-}
 
 // Função para acender todos os LEDs com uma cor específica e intensidade em ponto flutuante
-void acende_matrizLEDS(bool r, bool g, bool b, double intensidade)
+void acende_matrizLEDS(bool r, bool g, bool b, double intensidade, PIO pio, uint sm)
 {
-    intensidade *= 255;
+    double R = r * intensidade;
+    double G = g * intensidade;
+    double B = b * intensidade;
     for (uint i = 0; i < LED_COUNT; ++i){
-        npSetLED(i, r * intensidade, g * intensidade, b * intensidade);                             
+        pio_sm_put_blocking(pio, sm, matrix_rgb(B, R, G));
     }
-    npWrite();
 }
 
 // Define os pinos do teclado
@@ -321,9 +261,6 @@ char get_key() {
 
 
 
-
-
-
 int main() {
     stdio_init_all(); // Inicializa a comunicação serial
     init_keypad();    // Configura o teclado
@@ -342,8 +279,6 @@ int main() {
     //coloca a frequência de clock para 128 MHz, facilitando a divisão pelo clock
     ok = set_sys_clock_khz(128000, false);
 
-    // Inicializa todos os códigos stdio padrão que estão ligados ao binário.
-    stdio_init_all();
 
     printf("iniciando a transmissão PIO");
     if (ok) printf("clock set to %ld\n", clock_get_hz(clk_sys));
@@ -361,21 +296,25 @@ while (true) {
         // por código de Apagar todos os LEDs antes de acender um novo
         switch (key) {
              case 'A': 
+                acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
                 set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
                 break;
-            case 'B': 
+            case 'B':
+                acende_matrizLEDS(0, 0, 1, 0.8, pio, sm); // Acende todos os LEDs de azul com 80% de intensidade 
                 set_buzzer_tone(BUZZER1, 494); // Frequência 494 Hz (Nota Si)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
                 break;
             case 'C':
+                acende_matrizLEDS(1, 0, 0, 0.8, pio, sm); // Acende todos os LEDs de vermelho com 80% de intensidade
                 set_buzzer_tone(BUZZER1, 523); // Frequência 523 Hz (Nota Dó)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
                 break;
             case 'D':
+                acende_matrizLEDS(0, 1, 0, 0.5, pio, sm); // Acende todos os LEDs de verde com 50% de intensidade
                 set_buzzer_tone(BUZZER1, 587); // Frequência 587 Hz (Nota Ré)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
