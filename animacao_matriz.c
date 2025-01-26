@@ -5,11 +5,19 @@
 #include "pico/stdlib.h"
 #include <hardware/pio.h>           // Biblioteca para manipulação de periféricos PIO
 #include "hardware/clocks.h"        // Biblioteca para controle de relógios do hardware
-#include "ws2818b.pio.h"            // Biblioteca PIO para controle de LEDs WS2818B
+
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
 // Biblioteca para RESET USB
 #include "pico/bootrom.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include "hardware/adc.h"
+#include "pico/bootrom.h"
+
+#include "animacao_matriz.pio.h" // Biblioteca PIO para controle de LEDs WS2818B
+
 
 
 #define BUZZER1 28              // define o pino 28 = Buzzer
@@ -18,77 +26,198 @@
 #define LED_COUNT 25                // Número de LEDs na matriz
 #define LED_PIN 7                   // Pino GPIO conectado aos LEDs
 
-// Estrutura para representar um pixel com componentes RGB
-struct pixel_t{ 
-    uint32_t G, R, B;                // Componentes de cor: Verde, Vermelho e Azul
-};
 
-typedef struct pixel_t pixel_t;     // Alias para a estrutura pixel_t
-typedef pixel_t npLED_t;            // Alias para facilitar o uso no contexto de LEDs
+//função Anibal
+//matrix para criar imagem na matriz de led - 1
 
-npLED_t leds[LED_COUNT];            // Array para armazenar o estado de cada LED
-PIO np_pio;                         // Variável para referenciar a instância PIO usada
-uint sm;                            // Variável para armazenar o número do state machine usado
+int desenho[15][25] =   {{0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 0, 0, 0, 4,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 0, 4},
+
+			            {2, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 0, 0, 0, 4,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 0, 4},
+
+			            {2, 0, 0, 0, 0,
+                        2, 0, 0, 0, 0, 
+                        0, 0, 0, 0, 4,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 0, 4},
+
+			            {2, 2, 0, 0, 0,
+                        2, 0, 0, 0, 0, 
+                        2, 0, 0, 0, 4,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 0, 4},
+
+			            {0, 0, 0, 0, 0,
+                        2, 2, 2, 0, 0, 
+                        0, 0, 2, 0, 4,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 0, 4},
+
+			            {0, 0, 0, 0, 0,
+                        0, 2, 2, 2, 0, 
+                        0, 0, 0, 2, 4,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 0, 4},
+
+			            {0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 2, 2, 2, 4,
+                        0, 1, 0, 2, 4,
+                        1, 1, 1, 0, 4},
+
+			            {3, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 2, 2, 2, 4,
+                        0, 1, 0, 2, 4,
+                        1, 1, 1, 0, 4},
+
+			            {3, 3, 0, 0, 0,
+                        3, 0, 0, 0, 0, 
+                        0, 2, 2, 2, 4,
+                        0, 1, 0, 2, 4,
+                        1, 1, 1, 0, 4},
+
+			            {0, 0, 0, 0, 0,
+                        3, 3, 0, 0, 0, 
+                        3, 2, 2, 2, 4,
+                        0, 1, 0, 2, 4,
+                        1, 1, 1, 0, 4},
+
+			            {0, 0, 0, 0, 0,
+                        3, 3, 0, 0, 0, 
+                        0, 0, 0, 0, 0,
+                        0, 1, 0, 2, 4,
+                        1, 1, 1, 0, 4},
+
+			            {0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        3, 3, 0, 0, 0,
+                        0, 1, 0, 0, 4,
+                        1, 1, 1, 2, 4},
+
+			            {0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 3, 0, 0, 0,
+                        3, 1, 0, 0, 4,
+                        0, 0, 0, 0, 0},
+
+			            {0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 0, 0, 0, 0,
+                        0, 3, 0, 0, 0,
+                        3, 1, 0, 0, 4},
+
+   			            {0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 
+                        0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0}};
 
 
-// Função para inicializar o PIO para controle dos LEDs
-void npInit(uint pin) 
+// Índices na ordem desejada
+int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                    
+
+//imprimir valor binário
+void imprimir_binario(int num) {
+ int i;
+ for (i = 31; i >= 0; i--) {
+  (num & (1 << i)) ? printf("1") : printf("0");
+ }
+}
+
+//rotina da interrupção
+static void gpio_irq_handler(uint gpio, uint32_t events){
+    printf("Interrupção ocorreu no pino %d, no evento %d\n", gpio, events);
+    printf("HABILITANDO O MODO GRAVAÇÃO");
+	reset_usb_boot(0,0); //habilita o modo de gravação do microcontrolador
+}
+
+//rotina para definição da intensidade de cores do led
+uint32_t matrix_rgb(double b, double r, double g)
 {
-    uint offset = pio_add_program(pio0, &ws2818b_program); // Carregar o programa PIO
-    np_pio = pio0;                                         // Usar o primeiro bloco PIO
+  unsigned char R, G, B;
+  R = r * 255;
+  G = g * 255;
+  B = b * 255;
+  return (G << 24) | (R << 16) | (B << 8);
+}
 
-    sm = pio_claim_unused_sm(np_pio, false);              // Tentar usar uma state machine do pio0
-    if (sm < 0)                                           // Se não houver disponível no pio0
-    {
-        np_pio = pio1;                                    // Mudar para o pio1
-        sm = pio_claim_unused_sm(np_pio, true);           // Usar uma state machine do pio1
+void init_pwm(uint gpio) {
+    gpio_set_function(gpio, GPIO_FUNC_PWM); // Configura o GPIO como PWM
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+    pwm_set_clkdiv(slice_num, 125.0f);     // Define o divisor do clock para 1 MHz
+    pwm_set_wrap(slice_num, 1000);        // Define o TOP para frequência de 1 kHz
+    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Razão cíclica inicial
+    pwm_set_enabled(slice_num, true);     // Habilita o PWM
+}
+
+void set_buzzer_tone(uint gpio, uint freq) {
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+    uint top = 1000000 / freq;            // Calcula o TOP para a frequência desejada
+    pwm_set_wrap(slice_num, top);
+    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), top / 2); // 50% duty cycle
+}
+
+void stop_buzzer(uint gpio) {
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
+}
+
+
+//rotina para acionar a matrix de leds - ws2812b
+//void desenho_pio(int *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b){
+void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double r, double g, double b) {
+    for (int16_t k = 1; k < 16; k++) {
+        for (int16_t i = 0; i < LED_COUNT; i++) {
+                switch (desenho[k][ordem[24-i]]) {
+                    case 0: 
+                        valor_led = matrix_rgb(b=0.0, r=0.0, g=0.0);
+                        break;
+                    case 1: 
+                        valor_led = matrix_rgb(b=1, r=0.0, g=0.0);
+                        break;
+                    case 2:
+                        valor_led = matrix_rgb(b=0.0, r=1, g=0.0);
+                        break;
+                    case 3:
+                        valor_led = matrix_rgb(b=0.0, r=0.0, g=1);
+                        break;
+                    case 4:
+                        valor_led = matrix_rgb(b=1, r=1, g=1);
+                        break;
+                }
+
+                pio_sm_put_blocking(pio, sm, valor_led);
+
+        }
+        imprimir_binario(valor_led);
+        set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)        
+        sleep_ms(100); 
+        stop_buzzer(BUZZER1);  
+        sleep_ms(300);              
     }
-
-    ws2818b_program_init(np_pio, sm, offset, pin, 800000.f); // Inicializar state machine para LEDs
-
-    for (uint i = 0; i < LED_COUNT; ++i)                  // Inicializar todos os LEDs como apagados
-    {
-        leds[i].R = 0;
-        leds[i].G = 0;
-        leds[i].B = 0;
-    }
 }
 
-// Função para definir a cor de um LED específico
-void npSetLED(const uint index, const uint8_t r, const uint8_t g, const uint8_t b) 
-{
-    leds[index].R = r;                                    // Definir componente vermelho
-    leds[index].G = g;                                    // Definir componente verde
-    leds[index].B = b;                                    // Definir componente azul
-}
-
-// Função para limpar (apagar) todos os LEDs
-void npClear() 
-{
-    for (uint i = 0; i < LED_COUNT; ++i)                  // Iterar sobre todos os LEDs
-        npSetLED(i, 0, 0, 0);                             // Definir cor como preta (apagado)
-}
-
-// Função para atualizar os LEDs no hardware
-void npWrite() 
-{
-    for (uint i = 0; i < LED_COUNT; ++i)                  // Iterar sobre todos os LEDs
-    {
-        pio_sm_put_blocking(np_pio, sm, leds[i].G<<24);       // Enviar componente verde
-        pio_sm_put_blocking(np_pio, sm, leds[i].R<<24);       // Enviar componente vermelho
-        pio_sm_put_blocking(np_pio, sm, leds[i].B<<24);       // Enviar componente azul
-    }
-}
+// fim função Anibal
 
 
-// Função para acender todos os LEDs com uma cor especifica e intensidade em ponto flutuante
-void acende_matrizLEDS(bool r, bool g, bool b, double intensidade)
+
+// Função para acender todos os LEDs com uma cor específica e intensidade em ponto flutuante
+void acende_matrizLEDS(bool r, bool g, bool b, double intensidade, PIO pio, uint sm)
 {
-    intensidade *= 255;
+    double R = r * intensidade;
+    double G = g * intensidade;
+    double B = b * intensidade;
     for (uint i = 0; i < LED_COUNT; ++i){
-        npSetLED(i, r * intensidade, g * intensidade, b * intensidade);                             
+        pio_sm_put_blocking(pio, sm, matrix_rgb(B, R, G));
     }
-    npWrite();
 }
 
 // Define os pinos do teclado
@@ -131,53 +260,7 @@ char get_key() {
     return 0; // Nenhuma tecla pressionada
 }
 
-void init_pwm(uint gpio) {
-    gpio_set_function(gpio, GPIO_FUNC_PWM); // Configura o GPIO como PWM
-    uint slice_num = pwm_gpio_to_slice_num(gpio);
-    pwm_set_clkdiv(slice_num, 125.0f);     // Define o divisor do clock para 1 MHz
-    pwm_set_wrap(slice_num, 1000);        // Define o TOP para frequência de 1 kHz
-    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Razão cíclica inicial
-    pwm_set_enabled(slice_num, true);     // Habilita o PWM
-}
 
-void set_buzzer_tone(uint gpio, uint freq) {
-    uint slice_num = pwm_gpio_to_slice_num(gpio);
-    uint top = 1000000 / freq;            // Calcula o TOP para a frequência desejada
-    pwm_set_wrap(slice_num, top);
-    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), top / 2); // 50% duty cycle
-}
-
-void stop_buzzer(uint gpio) {
-    uint slice_num = pwm_gpio_to_slice_num(gpio);
-    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
-}
-
-void canon(){
-    set_buzzer_tone(BUZZER1, 395); 
-        sleep_ms(500);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 330); 
-        sleep_ms(250);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 352); 
-        sleep_ms(250);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 395); 
-        sleep_ms(500);
-        stop_buzzer(BUZZER1);
-}
-
-void canon2() {
-    set_buzzer_tone(BUZZER1, 523); // C
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-    set_buzzer_tone(BUZZER1, 523); // C
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-    set_buzzer_tone(BUZZER1, 587); // D
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-}
 
 // |====================================================|
 // |                                                    |
@@ -217,7 +300,26 @@ int main() {
     gpio_set_dir(BUZZER1, GPIO_OUT);
     init_pwm(BUZZER1);
 
-    npInit(LED_PIN); // Incializa a matriz de LEDs
+    //inicio parte da função Anibal
+    PIO pio = pio0; 
+    bool ok;
+    uint16_t i;
+    uint32_t valor_led;
+    double r = 0.0, b = 0.0 , g = 0.0;
+
+    //coloca a frequência de clock para 128 MHz, facilitando a divisão pelo clock
+    ok = set_sys_clock_khz(128000, false);
+
+
+    printf("iniciando a transmissão PIO");
+    if (ok) printf("clock set to %ld\n", clock_get_hz(clk_sys));
+
+    //configurações da PIO
+    uint offset = pio_add_program(pio, &animacao_matriz_program);
+    uint sm = pio_claim_unused_sm(pio, true);
+    animacao_matriz_program_init(pio, sm, offset, LED_PIN);
+    // fim parte da função Anibal
+
 
 while (true) {
     char key = get_key(); // Lê a tecla pressionada
@@ -225,21 +327,25 @@ while (true) {
         // por código de Apagar todos os LEDs antes de acender um novo
         switch (key) {
              case 'A': 
+                acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
                 set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
                 break;
-            case 'B': 
+            case 'B':
+                acende_matrizLEDS(0, 0, 1, 0.8, pio, sm); // Acende todos os LEDs de azul com 80% de intensidade 
                 set_buzzer_tone(BUZZER1, 494); // Frequência 494 Hz (Nota Si)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
                 break;
             case 'C':
+                acende_matrizLEDS(1, 0, 0, 0.8, pio, sm); // Acende todos os LEDs de vermelho com 80% de intensidade
                 set_buzzer_tone(BUZZER1, 523); // Frequência 523 Hz (Nota Dó)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
                 break;
             case 'D':
+                acende_matrizLEDS(0, 1, 0, 0.5, pio, sm); // Acende todos os LEDs de verde com 50% de intensidade
                 set_buzzer_tone(BUZZER1, 587); // Frequência 587 Hz (Nota Ré)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
@@ -254,10 +360,7 @@ while (true) {
                 reset_usb_boot(0, 0);
                 break;
             case '#':
-                canon2(); // Função específica
-                set_buzzer_tone(BUZZER1, 698); // Frequência 698 Hz (Nota Fá)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
+
                 break;
             case '0':
                 Animacao_0();
