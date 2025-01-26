@@ -5,10 +5,10 @@ Geração de animações em uma matriz de LEDs 5x5. Com o auxílio do simulador 
 
 - [ ] Tarefa 01
 - [ ] Tarefa 02
-- [ ] Tarefa 03
-- [ ] Tarefa 04
-- [ ] Tarefa 05
-- [ ] Tarefa 06
+- [X] Tarefa 03
+- [X] Tarefa 04
+- [X] Tarefa 05
+- [X] Tarefa 06
 - [ ] Tarefa 07
 - [ ] Tarefa 08
 - [x] Tarefa 09
