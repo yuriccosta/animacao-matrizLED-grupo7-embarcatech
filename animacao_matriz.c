@@ -8,6 +8,8 @@
 #include "ws2818b.pio.h"            // Biblioteca PIO para controle de LEDs WS2818B
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
+// Biblioteca para RESET USB
+#include "pico/bootrom.h"
 
 
 #define BUZZER1 28              // define o pino 28 = Buzzer
@@ -247,6 +249,9 @@ while (true) {
                 set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
                 sleep_ms(500);
                 stop_buzzer(BUZZER1);
+                
+                // Escreve a sequência mágica no endereço especial
+                reset_usb_boot(0, 0);
                 break;
             case '#':
                 canon2(); // Função específica
