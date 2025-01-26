@@ -21,11 +21,13 @@
 
 
 #define BUZZER1 21              // define o pino 21 = Buzzer
+#define FPS 3
 
 // Definições de constantes
 #define LED_COUNT 25                // Número de LEDs na matriz
 #define LED_PIN 7                   // Pino GPIO conectado aos LEDs
 
+int frame_delay = 1000 / FPS; // Intervalo em milissegundos
 // Anibal Maldonado - Índices da minha matriz de desenho na ordem desejada
 int ordem[] = {0, 1, 2, 3, 4, 9, 8,7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15 , 20, 21, 22, 23, 24};                 
 
@@ -105,7 +107,7 @@ void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double
         set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)        
         sleep_ms(100); 
         stop_buzzer(BUZZER1);  
-        sleep_ms(300);              
+        sleep_ms(frame_delay);          
     }
 }
 
