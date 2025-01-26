@@ -52,6 +52,21 @@ void npInit(uint pin)
     }
 }
 
+void Animacao_0(){
+    acende_matrizLEDS(false, false, true, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(false, true, false, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(false, true, true, 255);
+    sleep_ms(200);
+    npClear();
+    acende_matrizLEDS(true, false, false, 255);
+    sleep_ms(200);
+    npClear();
+}
+
 // Função para definir a cor de um LED específico
 void npSetLED(const uint index, const uint8_t r, const uint8_t g, const uint8_t b) 
 {
@@ -223,7 +238,7 @@ while (true) {
                 stop_buzzer(BUZZER1);
                 break;
             case '0':
-
+                Anomacao_0();
                 break;
             case '1':
 
