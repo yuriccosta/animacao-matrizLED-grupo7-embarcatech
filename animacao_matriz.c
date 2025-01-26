@@ -29,7 +29,6 @@
 
 //função Anibal
 //matrix para criar imagem na matriz de led - 1
-
 int desenho[15][25] =   {{0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0, 
                         0, 0, 0, 0, 4,
@@ -119,10 +118,9 @@ int desenho[15][25] =   {{0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0,
                         0, 0, 0, 0, 0}};
-
-
+                        
 // Índices na ordem desejada
-int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                    
+int ordem[] = {0,1, 2, 3, 4,9 , 8, 7,6,5, 10,11,12,13,14,19,18,17,16,15,20,21,22,23,24};                  
 
 //imprimir valor binário
 void imprimir_binario(int num) {
@@ -170,6 +168,32 @@ void stop_buzzer(uint gpio) {
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
 }
 
+void canon(){
+    set_buzzer_tone(BUZZER1, 395); 
+        sleep_ms(500);
+        stop_buzzer(BUZZER1);
+        set_buzzer_tone(BUZZER1, 330); 
+        sleep_ms(250);
+        stop_buzzer(BUZZER1);
+        set_buzzer_tone(BUZZER1, 352); 
+        sleep_ms(250);
+        stop_buzzer(BUZZER1);
+        set_buzzer_tone(BUZZER1, 395); 
+        sleep_ms(500);
+        stop_buzzer(BUZZER1);
+}
+
+void canon2() {
+    set_buzzer_tone(BUZZER1, 523); // C
+    sleep_ms(300);
+    stop_buzzer(BUZZER1);
+    set_buzzer_tone(BUZZER1, 523); // C
+    sleep_ms(300);
+    stop_buzzer(BUZZER1);
+    set_buzzer_tone(BUZZER1, 587); // D
+    sleep_ms(300);
+    stop_buzzer(BUZZER1);
+}
 
 //rotina para acionar a matrix de leds - ws2812b
 //void desenho_pio(int *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b){
@@ -267,7 +291,7 @@ char get_key() {
 // |                      Animações                     |
 // |                                                    |
 // |====================================================|
-
+/* 
 void Animacao_0(){    
     acende_matrizLEDS(false, false, true, 255);
     sleep_ms(200);
@@ -290,7 +314,7 @@ void Animacao_0(){
     acende_matrizLEDS(true, true, true, 255);
     sleep_ms(200);
     npClear();
-}
+} */
 
 int main() {
     stdio_init_all(); // Inicializa a comunicação serial
@@ -321,85 +345,85 @@ int main() {
     // fim parte da função Anibal
 
 
-while (true) {
-    char key = get_key(); // Lê a tecla pressionada
-    if (key) {
-        // por código de Apagar todos os LEDs antes de acender um novo
-        switch (key) {
-             case 'A': 
-                acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
-                set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
-                break;
-            case 'B':
-                acende_matrizLEDS(0, 0, 1, 0.8, pio, sm); // Acende todos os LEDs de azul com 80% de intensidade 
-                set_buzzer_tone(BUZZER1, 494); // Frequência 494 Hz (Nota Si)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
-                break;
-            case 'C':
-                acende_matrizLEDS(1, 0, 0, 0.8, pio, sm); // Acende todos os LEDs de vermelho com 80% de intensidade
-                set_buzzer_tone(BUZZER1, 523); // Frequência 523 Hz (Nota Dó)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
-                break;
-            case 'D':
-                acende_matrizLEDS(0, 1, 0, 0.5, pio, sm); // Acende todos os LEDs de verde com 50% de intensidade
-                set_buzzer_tone(BUZZER1, 587); // Frequência 587 Hz (Nota Ré)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
-                break;
-            case '*':
-                canon(); // Função específica
-                set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
-                
-                // Escreve a sequência mágica no endereço especial
-                reset_usb_boot(0, 0);
-                break;
-            case '#':
+    while (true) {
+        char key = get_key(); // Lê a tecla pressionada
+        if (key) {
+            // por código de Apagar todos os LEDs antes de acender um novo
+            switch (key) {
+                case 'A': 
+                    acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
+                    set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)
+                    sleep_ms(500);
+                    stop_buzzer(BUZZER1);
+                    break;
+                case 'B':
+                    acende_matrizLEDS(0, 0, 1, 0.8, pio, sm); // Acende todos os LEDs de azul com 80% de intensidade 
+                    set_buzzer_tone(BUZZER1, 494); // Frequência 494 Hz (Nota Si)
+                    sleep_ms(500);
+                    stop_buzzer(BUZZER1);
+                    break;
+                case 'C':
+                    acende_matrizLEDS(1, 0, 0, 0.8, pio, sm); // Acende todos os LEDs de vermelho com 80% de intensidade
+                    set_buzzer_tone(BUZZER1, 523); // Frequência 523 Hz (Nota Dó)
+                    sleep_ms(500);
+                    stop_buzzer(BUZZER1);
+                    break;
+                case 'D':
+                    acende_matrizLEDS(0, 1, 0, 0.5, pio, sm); // Acende todos os LEDs de verde com 50% de intensidade
+                    set_buzzer_tone(BUZZER1, 587); // Frequência 587 Hz (Nota Ré)
+                    sleep_ms(500);
+                    stop_buzzer(BUZZER1);
+                    break;
+                case '*':
+                    canon(); // Função específica
+                    set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
+                    sleep_ms(500);
+                    stop_buzzer(BUZZER1);
+                    
+                    // Escreve a sequência mágica no endereço especial
+                    reset_usb_boot(0, 0);
+                    break;
+                case '#':
 
-                break;
-            case '0':
-                Animacao_0();
-                break;
-            case '1':
+                    break;
+                case '0':
+                    //Animacao_0();
+                    break;
+                case '1':
+                    //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
+                    desenho_pio(desenho, valor_led, pio, sm, r, g, b);
+                    break;
+                case '2':
 
-                break;
-            case '2':
+                    break;
+                case '3':
 
-                break;
-            case '3':
+                    break;
+                case '4':
 
-                break;
-            case '4':
+                    break;
+                case '5':
 
-                break;
-            case '5':
+                    break;
+                case '6':
 
-                break;
-            case '6':
+                    break;
+                case '7':
 
-                break;
-            case '7':
+                    break;
+                case '8':
 
-                break;
-            case '8':
+                    break;
+                case '9':
 
-                break;
-            case '9':
-
-                break;
-            default:
-                printf("Tecla não associada: %c\n", key);
-                break;
+                    break;
+                default:
+                    printf("Tecla não associada: %c\n", key);
+                    break;
+            }
+            stop_buzzer(BUZZER1); 
+            printf("Tecla pressionada: %c\n", key);
         }
-        stop_buzzer(BUZZER1); 
-        printf("Tecla pressionada: %c\n", key);
+        sleep_ms(50); // Pequeno atraso para evitar leituras duplicadas
     }
-    sleep_ms(50); // Pequeno atraso para evitar leituras duplicadas
-}
-
 } 
