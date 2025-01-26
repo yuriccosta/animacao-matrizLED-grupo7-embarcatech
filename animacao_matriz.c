@@ -6,7 +6,7 @@
 #include "pico/stdlib.h"
 #include <hardware/pio.h>           // Biblioteca para manipulação de periféricos PIO
 #include "hardware/clocks.h"        // Biblioteca para controle de relógios do hardware
-#include "ws2818b.pio.h"            // Biblioteca PIO para controle de LEDs WS2818B
+
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
 
@@ -15,8 +15,7 @@
 #include "hardware/adc.h"
 #include "pico/bootrom.h"
 
-//arquivo .pio
-#include "animacao_matriz.pio.h"
+#include "animacao_matriz.pio.h" // Biblioteca PIO para controle de LEDs WS2818B
 
 
 
@@ -149,14 +148,33 @@ uint32_t matrix_rgb(double b, double r, double g)
   return (G << 24) | (R << 16) | (B << 8);
 }
 
+void init_pwm(uint gpio) {
+    gpio_set_function(gpio, GPIO_FUNC_PWM); // Configura o GPIO como PWM
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+    pwm_set_clkdiv(slice_num, 125.0f);     // Define o divisor do clock para 1 MHz
+    pwm_set_wrap(slice_num, 1000);        // Define o TOP para frequência de 1 kHz
+    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Razão cíclica inicial
+    pwm_set_enabled(slice_num, true);     // Habilita o PWM
+}
+
+void set_buzzer_tone(uint gpio, uint freq) {
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+    uint top = 1000000 / freq;            // Calcula o TOP para a frequência desejada
+    pwm_set_wrap(slice_num, top);
+    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), top / 2); // 50% duty cycle
+}
+
+void stop_buzzer(uint gpio) {
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
+}
+
 
 //rotina para acionar a matrix de leds - ws2812b
 //void desenho_pio(int *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b){
 void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double r, double g, double b) {
     for (int16_t k = 1; k < 16; k++) {
         for (int16_t i = 0; i < LED_COUNT; i++) {
-            //if (i%2==0)
-            //{
                 switch (desenho[k][ordem[24-i]]) {
                     case 0: 
                         valor_led = matrix_rgb(b=0.0, r=0.0, g=0.0);
@@ -176,9 +194,13 @@ void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double
                 }
 
                 pio_sm_put_blocking(pio, sm, valor_led);
+
         }
         imprimir_binario(valor_led);
-        sleep_ms(500);
+        set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)        
+        sleep_ms(100); 
+        stop_buzzer(BUZZER1);  
+        sleep_ms(300);              
     }
 }
 
@@ -186,7 +208,7 @@ void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double
 
 
 // Estrutura para representar um pixel com componentes RGB
-struct pixel_t{ 
+struct pixel_t { 
     uint32_t G, R, B;                // Componentes de cor: Verde, Vermelho e Azul
 };
 
@@ -197,23 +219,22 @@ npLED_t leds[LED_COUNT];            // Array para armazenar o estado de cada LED
 PIO np_pio;                         // Variável para referenciar a instância PIO usada
 uint sm;                            // Variável para armazenar o número do state machine usado
 
-
 // Função para inicializar o PIO para controle dos LEDs
 void npInit(uint pin) 
 {
-    uint offset = pio_add_program(pio0, &ws2818b_program); // Carregar o programa PIO
-    np_pio = pio0;                                         // Usar o primeiro bloco PIO
+    uint offset = pio_add_program(pio0, &animacao_matriz_program); // Carregar o programa PIO
+    np_pio = pio0;                                                // Usar o primeiro bloco PIO
 
-    sm = pio_claim_unused_sm(np_pio, false);              // Tentar usar uma state machine do pio0
-    if (sm < 0)                                           // Se não houver disponível no pio0
+    sm = pio_claim_unused_sm(np_pio, false);                      // Tentar usar uma state machine do pio0
+    if (sm < 0)                                                   // Se não houver disponível no pio0
     {
-        np_pio = pio1;                                    // Mudar para o pio1
-        sm = pio_claim_unused_sm(np_pio, true);           // Usar uma state machine do pio1
+        np_pio = pio1;                                            // Mudar para o pio1
+        sm = pio_claim_unused_sm(np_pio, true);                   // Usar uma state machine do pio1
     }
 
-    ws2818b_program_init(np_pio, sm, offset, pin, 800000.f); // Inicializar state machine para LEDs
+    animacao_matriz_program_init(np_pio, sm, offset, pin);        // Inicializar state machine para LEDs
 
-    for (uint i = 0; i < LED_COUNT; ++i)                  // Inicializar todos os LEDs como apagados
+    for (uint i = 0; i < LED_COUNT; ++i)                          // Inicializar todos os LEDs como apagados
     {
         leds[i].R = 0;
         leds[i].G = 0;
@@ -241,14 +262,14 @@ void npWrite()
 {
     for (uint i = 0; i < LED_COUNT; ++i)                  // Iterar sobre todos os LEDs
     {
-        pio_sm_put_blocking(np_pio, sm, leds[i].G<<24);       // Enviar componente verde
-        pio_sm_put_blocking(np_pio, sm, leds[i].R<<24);       // Enviar componente vermelho
-        pio_sm_put_blocking(np_pio, sm, leds[i].B<<24);       // Enviar componente azul
+        // Enviar os valores de cada componente diretamente para o PIO
+        pio_sm_put_blocking(np_pio, sm, leds[i].G);       // Enviar componente verde
+        pio_sm_put_blocking(np_pio, sm, leds[i].R);       // Enviar componente vermelho
+        pio_sm_put_blocking(np_pio, sm, leds[i].B);       // Enviar componente azul
     }
 }
 
-
-// Função para acender todos os LEDs com uma cor especifica e intensidade em ponto flutuante
+// Função para acender todos os LEDs com uma cor específica e intensidade em ponto flutuante
 void acende_matrizLEDS(bool r, bool g, bool b, double intensidade)
 {
     intensidade *= 255;
@@ -298,53 +319,10 @@ char get_key() {
     return 0; // Nenhuma tecla pressionada
 }
 
-void init_pwm(uint gpio) {
-    gpio_set_function(gpio, GPIO_FUNC_PWM); // Configura o GPIO como PWM
-    uint slice_num = pwm_gpio_to_slice_num(gpio);
-    pwm_set_clkdiv(slice_num, 125.0f);     // Define o divisor do clock para 1 MHz
-    pwm_set_wrap(slice_num, 1000);        // Define o TOP para frequência de 1 kHz
-    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Razão cíclica inicial
-    pwm_set_enabled(slice_num, true);     // Habilita o PWM
-}
 
-void set_buzzer_tone(uint gpio, uint freq) {
-    uint slice_num = pwm_gpio_to_slice_num(gpio);
-    uint top = 1000000 / freq;            // Calcula o TOP para a frequência desejada
-    pwm_set_wrap(slice_num, top);
-    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), top / 2); // 50% duty cycle
-}
 
-void stop_buzzer(uint gpio) {
-    uint slice_num = pwm_gpio_to_slice_num(gpio);
-    pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
-}
 
-void canon(){
-    set_buzzer_tone(BUZZER1, 395); 
-        sleep_ms(500);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 330); 
-        sleep_ms(250);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 352); 
-        sleep_ms(250);
-        stop_buzzer(BUZZER1);
-        set_buzzer_tone(BUZZER1, 395); 
-        sleep_ms(500);
-        stop_buzzer(BUZZER1);
-}
 
-void canon2() {
-    set_buzzer_tone(BUZZER1, 523); // C
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-    set_buzzer_tone(BUZZER1, 523); // C
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-    set_buzzer_tone(BUZZER1, 587); // D
-    sleep_ms(300);
-    stop_buzzer(BUZZER1);
-}
 
 int main() {
     stdio_init_all(); // Inicializa a comunicação serial
@@ -403,16 +381,10 @@ while (true) {
                 stop_buzzer(BUZZER1);
                 break;
             case '*':
-                canon(); // Função específica
-                set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
+
                 break;
             case '#':
-                canon2(); // Função específica
-                set_buzzer_tone(BUZZER1, 698); // Frequência 698 Hz (Nota Fá)
-                sleep_ms(500);
-                stop_buzzer(BUZZER1);
+
                 break;
             case '0':
 
