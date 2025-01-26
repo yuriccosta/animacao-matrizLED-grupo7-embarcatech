@@ -1,6 +1,5 @@
-// Anibal Maldonado: Código principal - menú  - https://github.com/PhD-Anibal
-// Anibal Maldonado: criação do diagram.json - https://github.com/PhD-Anibal
-// Anibal Maldonado: botão 1 - Animação - Tetris - https://github.com/PhD-Anibal
+// Anibal Maldonado: Código principal  - https://github.com/PhD-Anibal
+// Anibal Maldonado: LED Vermelho ao apertar 'A' - https://github.com/PhD-Anibal
 
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -329,8 +328,7 @@ while (true) {
 
                 break;
             case '1':
-                //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
-                desenho_pio(desenho, valor_led, pio, sm, r, g, b);
+
                 break;
             case '2':
 
