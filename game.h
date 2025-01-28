@@ -2,6 +2,6 @@
 #define GAME_H
 
 // Declaração da matriz
-extern int game[15][25];
+extern int game[16][25];
 
 #endif
