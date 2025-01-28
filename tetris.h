@@ -4,4 +4,5 @@
 // Declaração da matriz
 extern int desenho[15][25];
 extern int desenho2[15][25];
+extern int desenhoFace[5][25];
 #endif
