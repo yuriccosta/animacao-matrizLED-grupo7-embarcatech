@@ -75,6 +75,18 @@ void stop_buzzer(uint gpio) {
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
 }
 
+
+// Função para acender todos os LEDs com uma cor específica e intensidade em ponto flutuante
+void acende_matrizLEDS(bool r, bool g, bool b, double intensidade, PIO pio, uint sm)
+{
+    double R = r * intensidade;
+    double G = g * intensidade;
+    double B = b * intensidade;
+    for (uint i = 0; i < LED_COUNT; ++i){
+        pio_sm_put_blocking(pio, sm, matrix_rgb(B, R, G));
+    }
+}
+
 // |====================================================|
 // |                                                    |
 // |                      Animações                     |
@@ -210,19 +222,68 @@ void guitar_pio(int guitar[][25], PIO pio, uint sm) {
     }
 }
 
+void game_pio(int guitar[][25], PIO pio, uint sm) {
+    uint32_t valor_led;
+    for (int16_t k = 0; k < 15; k++) {
+        for (int i = 0; i < LED_COUNT; i++) {
+                switch (guitar[k][ordem[24-i]]) {
+                    case 0: 
+                        valor_led = matrix_rgb(0.0, 0.0, 0.0); 
+                        break;
+                    case 1: 
+                        valor_led = matrix_rgb(1, 0.0, 0.0); //azul
+                        break;
+                    case 2:
+                        valor_led = matrix_rgb(0.0, 1, 0.0); //vermelho
+                        break;
+                    case 3:
+                        valor_led = matrix_rgb(0.0, 0.0, 1); //verde
+                        break;
+                    case 4:
+                        valor_led = matrix_rgb(1, 1, 1); //branco
+                        break;
+                    case 5:
+                        valor_led = matrix_rgb(0, 1, 0.5); //laranja
+                        break;
+                    case 6:
+                        valor_led = matrix_rgb(0, 1, 1); //amarelo
+                        break;
+                    case 7:
+                        valor_led = matrix_rgb(1, 1, 0); //roxo
+                        break;
+                }
+                pio_sm_put_blocking(pio, sm, valor_led);
 
+        }
+        imprimir_binario(valor_led);
 
-// Função para acender todos os LEDs com uma cor específica e intensidade em ponto flutuante
-void acende_matrizLEDS(bool r, bool g, bool b, double intensidade, PIO pio, uint sm)
-{
-    double R = r * intensidade;
-    double G = g * intensidade;
-    double B = b * intensidade;
-    for (uint i = 0; i < LED_COUNT; ++i){
-        pio_sm_put_blocking(pio, sm, matrix_rgb(B, R, G));
+        if(k == 6){
+            set_buzzer_tone(BUZZER1, 660);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 11){
+            set_buzzer_tone(BUZZER1, 660);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);        
+        } else if(k == 13){
+            set_buzzer_tone(BUZZER1, 440);
+            sleep_ms(50);
+            set_buzzer_tone(BUZZER1, 380);
+            sleep_ms(50);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);
+        } 
+        else {
+            set_buzzer_tone(BUZZER1, 440);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);                                
+        }
     }
+    acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
 }
-
 
 // Define os pinos do teclado
 uint columns[4] = {4, 3, 2, 1}; // Colunas conectadas aos GPIOs
@@ -336,7 +397,7 @@ int main() {
                     acende_matrizLEDS(1, 1, 1, 0.2, pio, sm); // Acende todos os LEDs de branco com 20% de intensidade
                     break;
                 case '0':
-                    desenho_pio(game, pio, sm);
+                    game_pio(game, pio, sm);
                     break;
                 case '1':
                     //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
