@@ -16,6 +16,8 @@
 
 #include "guitarhero.h"
 
+#include "game.h"
+
 
 // Definições de constantes
 #define BUZZER1 21              // Define o pino 21 = Buzzer
@@ -72,6 +74,12 @@ void stop_buzzer(uint gpio) {
     uint slice_num = pwm_gpio_to_slice_num(gpio);
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
 }
+
+// |====================================================|
+// |                                                    |
+// |                      Animações                     |
+// |                                                    |
+// |====================================================|
 
 
 //rotina para acionar a matrix de leds - ws2812b
@@ -257,36 +265,12 @@ char get_key() {
 }
 
 
+// |====================================================|
+// |                                                    |
+// |                   Loop principal                   |
+// |                                                    |
+// |====================================================|
 
-// |====================================================|
-// |                                                    |
-// |                      Animações                     |
-// |                                                    |
-// |====================================================|
-/* 
-void Animacao_0(){    
-    acende_matrizLEDS(false, false, true, 255);
-    sleep_ms(200);
-    npClear();
-    acende_matrizLEDS(false, true, false, 255);
-    sleep_ms(200);
-    npClear();
-    acende_matrizLEDS(false, true, true, 255);
-    sleep_ms(200);
-    npClear();
-    acende_matrizLEDS(true, false, false, 255);
-    sleep_ms(200);
-    npClear();
-    acende_matrizLEDS(true, false, true, 255);
-    sleep_ms(200);
-    npClear();
-    acende_matrizLEDS(true, true, false, 255);
-    sleep_ms(200);
-    npClear();
-    acende_matrizLEDS(true, true, true, 255);
-    sleep_ms(200);
-    npClear();
-} */
 
 int main() {
     init_keypad();    // Configura o teclado
@@ -352,7 +336,7 @@ int main() {
                     acende_matrizLEDS(1, 1, 1, 0.2, pio, sm); // Acende todos os LEDs de branco com 20% de intensidade
                     break;
                 case '0':
-                    //Animacao_0();
+                    desenho_pio(game, pio, sm);
                     break;
                 case '1':
                     //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
