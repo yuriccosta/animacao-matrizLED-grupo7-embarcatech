@@ -5,30 +5,24 @@
 #include "pico/stdlib.h"
 #include <hardware/pio.h>           // Biblioteca para manipulação de periféricos PIO
 #include "hardware/clocks.h"        // Biblioteca para controle de relógios do hardware
-
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
-// Biblioteca para RESET USB
-#include "pico/bootrom.h"
 
-#include <stdlib.h>
-#include <math.h>
-#include "hardware/adc.h"
+// Biblioteca para RESET USB
 #include "pico/bootrom.h"
 
 #include "animacao_matriz.pio.h" // Biblioteca PIO para controle de LEDs WS2818B
 #include "tetris.h"
 
 
-#define BUZZER1 21              // define o pino 21 = Buzzer
-#define FPS 3
-
 // Definições de constantes
-#define LED_COUNT 25                // Número de LEDs na matriz
-#define LED_PIN 7                   // Pino GPIO conectado aos LEDs
+#define BUZZER1 21              // Define o pino 21 = Buzzer
+#define FPS 3                 // Taxa de quadros por segundo
+#define LED_COUNT 25            // Número de LEDs na matriz
+#define LED_PIN 7               // Pino GPIO conectado aos LEDs
 
 int frame_delay = 1000 / FPS; // Intervalo em milissegundos
-// Anibal Maldonado - Índices da minha matriz de desenho na ordem desejada
+// Ordem da matriz de leds
 int ordem[] = {0, 1, 2, 3, 4, 9, 8,7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15 , 20, 21, 22, 23, 24};                 
 
 //imprimir valor binário
@@ -77,29 +71,29 @@ void stop_buzzer(uint gpio) {
     pwm_set_chan_level(slice_num, pwm_gpio_to_channel(gpio), 0); // Desliga o PWM
 }
 
+
 //rotina para acionar a matrix de leds - ws2812b
-//void desenho_pio(int *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b){
-void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double r, double g, double b) {
+void desenho_pio(int desenho[][25], PIO pio, uint sm) {
+    uint32_t valor_led;
     for (int16_t k = 0; k < 15; k++) {
         for (int16_t i = 0; i < LED_COUNT; i++) {
                 switch (desenho[k][ordem[24-i]]) {
                     case 0: 
-                        valor_led = matrix_rgb(b=0.0, r=0.0, g=0.0);
+                        valor_led = matrix_rgb(0.0, 0.0, 0.0);
                         break;
                     case 1: 
-                        valor_led = matrix_rgb(b=1, r=0.0, g=0.0);
+                        valor_led = matrix_rgb(1.0, 0.0, 0.0);
                         break;
                     case 2:
-                        valor_led = matrix_rgb(b=0.0, r=1, g=0.0);
+                        valor_led = matrix_rgb(0.0, 1.0, 0.0);
                         break;
                     case 3:
-                        valor_led = matrix_rgb(b=0.0, r=0.0, g=1);
+                        valor_led = matrix_rgb(0.0, 0.0, 1.0);
                         break;
                     case 4:
-                        valor_led = matrix_rgb(b=1, r=1, g=1);
+                        valor_led = matrix_rgb(1.0, 1.0, 1.0);
                         break;
                 }
-
                 pio_sm_put_blocking(pio, sm, valor_led);
 
         }
@@ -107,11 +101,9 @@ void desenho_pio(int desenho[][25], uint32_t valor_led, PIO pio, uint sm, double
         set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)        
         sleep_ms(100); 
         stop_buzzer(BUZZER1);  
-        sleep_ms(frame_delay - 100);          
+        sleep_ms(frame_delay);          
     }
 }
-
-// fim função Anibal
 
 
 
@@ -125,6 +117,7 @@ void acende_matrizLEDS(bool r, bool g, bool b, double intensidade, PIO pio, uint
         pio_sm_put_blocking(pio, sm, matrix_rgb(B, R, G));
     }
 }
+
 
 // Define os pinos do teclado
 uint columns[4] = {4, 3, 2, 1}; // Colunas conectadas aos GPIOs
@@ -199,23 +192,20 @@ void Animacao_0(){
 } */
 
 int main() {
-    stdio_init_all(); // Inicializa a comunicação serial
     init_keypad();    // Configura o teclado
     
     gpio_init(BUZZER1);
     gpio_set_dir(BUZZER1, GPIO_OUT);
     init_pwm(BUZZER1);
 
-    //inicio parte da função Anibal
+
     PIO pio = pio0; 
     bool ok;
-
-    uint32_t valor_led;
-    double r = 0.0, b = 0.0 , g = 0.0;
-
+    
     //coloca a frequência de clock para 128 MHz, facilitando a divisão pelo clock
     ok = set_sys_clock_khz(128000, false);
 
+    stdio_init_all(); // Inicializa a comunicação serial
 
     printf("iniciando a transmissão PIO");
     if (ok) printf("clock set to %ld\n", clock_get_hz(clk_sys));
@@ -224,9 +214,8 @@ int main() {
     uint offset = pio_add_program(pio, &animacao_matriz_program);
     uint sm = pio_claim_unused_sm(pio, true);
     animacao_matriz_program_init(pio, sm, offset, LED_PIN);
-    // fim parte da função Anibal
 
-
+    
     while (true) {
         char key = get_key(); // Lê a tecla pressionada
         if (key) {
@@ -260,8 +249,6 @@ int main() {
                     set_buzzer_tone(BUZZER1, 659); // Frequência 659 Hz (Nota Mi)
                     sleep_ms(200);
                     stop_buzzer(BUZZER1);
-                    
-                    // Escreve a sequência mágica no endereço especial
                     reset_usb_boot(0, 0);
                     break;
                 case '#':
@@ -272,10 +259,10 @@ int main() {
                     break;
                 case '1':
                     //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
-                    desenho_pio(desenho, valor_led, pio, sm, r, g, b);
+                    desenho_pio(desenho, pio, sm);
                     break;
                 case '2':
-                    desenho_pio(desenho2, valor_led, pio, sm, r, g, b);
+                    desenho_pio(desenho2, pio, sm);
                     break;
                 case '3':
 

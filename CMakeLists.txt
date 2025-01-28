@@ -61,7 +61,6 @@ target_link_libraries(animacao_matriz
         hardware_pio
         hardware_clocks
         hardware_pwm
-        hardware_adc
         )
 
 pico_add_extra_outputs(animacao_matriz)
