@@ -18,6 +18,7 @@
 
 #include "game.h"
 
+#include "pingpong.h"
 
 // Definições de constantes
 #define BUZZER1 21              // Define o pino 21 = Buzzer
@@ -285,6 +286,70 @@ void game_pio(int guitar[][25], PIO pio, uint sm) {
     acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
 }
 
+void pingpong_pio(int pingpong[][25], PIO pio, uint sm) {
+    uint32_t valor_led;
+    bool bolinha_tocou_trave = false; // Flag para detectar colisão da bola com a trave
+    const int frame_delay = 300;      // Delay entre os frames (em milissegundos)
+    // const int LED_COUNT = 25;         // Quantidade de LEDs por frame
+
+    for (int16_t k = 0; k < 25; k++) { // Percorre os frames da animação
+        bolinha_tocou_trave = false;  // Reseta a flag a cada frame
+
+        for (int i = 0; i < LED_COUNT; i++) {
+            switch (pingpong[k][i]) {
+                case 0: 
+                    valor_led = matrix_rgb(0.0, 0.0, 0.0); // LED apagado
+                    break;
+                case 1: 
+                    valor_led = matrix_rgb(0.0, 0.0, 1.0); // Azul (trave)
+                    break;
+                case 2:
+                    valor_led = matrix_rgb(1.0, 0.0, 0.0); // Vermelho (bola)
+                    // Verifica se a bola tocou na trave
+                    if ((i > 0 && pingpong[k][i - 1] == 1) ||  // Verifica trave à esquerda
+                        (i < LED_COUNT - 1 && pingpong[k][i + 1] == 1)) { // Verifica trave à direita
+                        bolinha_tocou_trave = true;
+                    }
+                    break;
+                case 3:
+                    valor_led = matrix_rgb(0.0, 1.0, 0.0); // Verde (efeito de piscar)
+                    break;
+                case 6:
+                    valor_led = matrix_rgb(1.0, 1.0, 0.0); // Amarelo (efeito especial)
+                    break;
+                case 7:
+                    valor_led = matrix_rgb(0.5, 0.0, 1.0); // Roxo (efeito especial)
+                    break;
+                default:
+                    valor_led = matrix_rgb(0.0, 0.0, 0.0); // Caso não reconhecido (desligado)
+                    break;
+            }
+            pio_sm_put_blocking(pio, sm, valor_led); // Envia cor ao LED
+        }
+
+        imprimir_binario(valor_led); // Exibe o estado dos LEDs
+
+        if (bolinha_tocou_trave) {
+            set_buzzer_tone(BUZZER1, 660);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+        }
+
+        if (k >= 8 && k <= 10) {
+            set_buzzer_tone(BUZZER1, 440);
+            sleep_ms(50);
+            stop_buzzer(BUZZER1);
+            sleep_ms(50);
+        }
+
+        sleep_ms(frame_delay); // Tempo entre os frames
+    }
+
+    acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs ao final
+}
+
+
+
 // Define os pinos do teclado
 uint columns[4] = {4, 3, 2, 1}; // Colunas conectadas aos GPIOs
 uint rows[4] = {9, 8, 6, 5};    // Linhas conectadas aos GPIOs
@@ -410,7 +475,7 @@ int main() {
                     guitar_pio(guitar, pio, sm);
                     break;
                 case '4':
-
+                    pingpong_pio(pingpong, pio, sm);
                     break;
                 case '5':
 
