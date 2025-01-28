@@ -14,6 +14,8 @@
 #include "animacao_matriz.pio.h" // Biblioteca PIO para controle de LEDs WS2818B
 #include "tetris.h"
 
+#include "guitarhero.h"
+
 
 // Definições de constantes
 #define BUZZER1 21              // Define o pino 21 = Buzzer
@@ -79,29 +81,124 @@ void desenho_pio(int desenho[][25], PIO pio, uint sm) {
         for (int16_t i = 0; i < LED_COUNT; i++) {
                 switch (desenho[k][ordem[24-i]]) {
                     case 0: 
-                        valor_led = matrix_rgb(0.0, 0.0, 0.0);
+                        valor_led = matrix_rgb(0.0, 0.0, 0.0); 
                         break;
                     case 1: 
-                        valor_led = matrix_rgb(1.0, 0.0, 0.0);
+                        valor_led = matrix_rgb(1, 0.0, 0.0); //azul
                         break;
                     case 2:
-                        valor_led = matrix_rgb(0.0, 1.0, 0.0);
+                        valor_led = matrix_rgb(0.0, 1, 0.0); //vermelho
                         break;
                     case 3:
-                        valor_led = matrix_rgb(0.0, 0.0, 1.0);
+                        valor_led = matrix_rgb(0.0, 0.0, 1); //verde
                         break;
                     case 4:
-                        valor_led = matrix_rgb(1.0, 1.0, 1.0);
+                        valor_led = matrix_rgb(1, 1, 1); //branco
+                        break;
+                    case 5:
+                        valor_led = matrix_rgb(0, 1, 0.5); //laranja
+                        break;
+                    case 6:
+                        valor_led = matrix_rgb(0, 1, 1); //amarelo
+                        break;
+                    case 7:
+                        valor_led = matrix_rgb(1, 1, 0); //roxo
                         break;
                 }
                 pio_sm_put_blocking(pio, sm, valor_led);
 
         }
         imprimir_binario(valor_led);
+
         set_buzzer_tone(BUZZER1, 440); // Frequência 440 Hz (Nota Lá)        
         sleep_ms(100); 
         stop_buzzer(BUZZER1);  
-        sleep_ms(frame_delay);          
+        sleep_ms(frame_delay - 100); 
+    }
+}
+
+
+void guitar_pio(int guitar[][25], PIO pio, uint sm) {
+    uint32_t valor_led;
+    for (int16_t k = 0; k < 15; k++) {
+        for (int i = 0; i < LED_COUNT; i++) {
+                switch (guitar[k][ordem[24-i]]) {
+                    case 0: 
+                        valor_led = matrix_rgb(0.0, 0.0, 0.0); 
+                        break;
+                    case 1: 
+                        valor_led = matrix_rgb(0.75, 0.0, 0.75); //amarelo
+                        break;
+                    case 2:
+                        valor_led = matrix_rgb(0.0, 0.75, 0.75); //laranja
+                        break;
+                    case 3:
+                        valor_led = matrix_rgb(0.0, 0.0, 0.75); //verde
+                        break;
+                    case 4:
+                        valor_led = matrix_rgb(0.5, 0.5, 0.5); //branco
+                        break;
+                    case 5:
+                        valor_led = matrix_rgb(0, 0.75, 0.0); //vermelho
+                        break;
+                    case 6:
+                        valor_led = matrix_rgb(0.75, 0.0, 0.0); //azul
+                        break;
+                    case 7:
+                        valor_led = matrix_rgb(0.75, 0.0, 0.75); //ciano
+                        break;
+                    case 8:
+                    valor_led = matrix_rgb(0.75, 0.75, 0.0); //roxo
+                    break;
+                    
+                }
+
+                pio_sm_put_blocking(pio, sm, valor_led);
+
+        }
+        imprimir_binario(valor_led);
+
+        if(k == 5){
+            set_buzzer_tone(BUZZER1, 330);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 6){
+            set_buzzer_tone(BUZZER1, 330);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 7){
+            set_buzzer_tone(BUZZER1, 260);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 8){
+            set_buzzer_tone(BUZZER1, 260);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 9){
+            set_buzzer_tone(BUZZER1, 290);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 10){
+            set_buzzer_tone(BUZZER1, 290);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 11){
+            set_buzzer_tone(BUZZER1, 330);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 12){
+            set_buzzer_tone(BUZZER1, 260);
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 13){
+            sleep_ms(100);
+            sleep_ms(frame_delay - 100);
+        }
+        else {
+            stop_buzzer(BUZZER1);
+            sleep_ms(100);             
+            sleep_ms(frame_delay - 100);
+        }
     }
 }
 
@@ -265,7 +362,7 @@ int main() {
                     desenho_pio(desenho2, pio, sm);
                     break;
                 case '3':
-
+                    guitar_pio(guitar, pio, sm);
                     break;
                 case '4':
 

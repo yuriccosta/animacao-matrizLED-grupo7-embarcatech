@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(animacao_matriz animacao_matriz.c tetris.c)
+add_executable(animacao_matriz animacao_matriz.c tetris.c guitarhero.c)
 
 pico_set_program_name(animacao_matriz "animacao_matriz")
 pico_set_program_version(animacao_matriz "0.1")
