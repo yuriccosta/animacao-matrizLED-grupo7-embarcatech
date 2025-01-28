@@ -355,7 +355,7 @@ int main() {
                     //Animacao_0();
                     break;
                 case '1':
-                    //rotina para escrever na matriz de leds com o emprego de PIO - desenho 2
+                    //rotina para escrever na matriz de leds com o emprego de PIO - desenho 1
                     desenho_pio(desenho, pio, sm);
                     break;
                 case '2':
