@@ -5,7 +5,7 @@ Geração de animações em uma matriz de LEDs 5x5. Com o auxílio do simulador 
 Figura 1: Diagrama do projeto com as conexões
 
 ## Video no Youtube do projeto: ##
-
+[Vídeo do youtube](https://youtu.be/68q5n1tdRc4)
 
 ### Tarefas ###
 
@@ -59,15 +59,17 @@ habilitar o modo de gravação via software (reboot).
 
 O sistema controla uma matriz de LEDs WS2812B conectada ao Raspberry Pi Pico W. A interação é feita por meio de um teclado matricial 4x4, onde cada tecla aciona uma função ou animação específica. 
 
+Cada uma das animações tem seus próprios arquivos .c para comportar as matrizes e seus devidos arquivos .h para terem seus cabeçalhos.
+
 ### Funcionalidades Implementadas
 1. **Animações por Tecla (0-9) com pelo menos 5 frames e é configurada fluida.**:
    - Cada tecla de `0` a `9` aciona uma animação diferente.
   
      - Animações:
      
-        Anibal Maldonado:  Ao acionar a número '1' apresenta uma animação do jogo Tetris com efeito sonoro de um buzzer
+        Anibal Maldonado:  Ao acionar o número '1' apresenta uma animação do jogo Tetris com efeito sonoro de um buzzer
 
-        Yuri
+        Yuri: Ao acionar o número '2' apresenta a animação do jogo da cobra que tenta capturar as maçãs
 
 2. **Comandos Específicos**:
    - **Tecla `A`**: Desliga todos os LEDs.
