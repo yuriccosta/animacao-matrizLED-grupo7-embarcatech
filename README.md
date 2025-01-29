@@ -9,14 +9,14 @@ Figura 1: Diagrama do projeto com as conexões
 
 ### Tarefas ###
 
-- [ ] Tarefa 01
-- [ ] Tarefa 02
+- [X] Tarefa 01
+- [X] Tarefa 02
 - [X] Tarefa 03
 - [X] Tarefa 04
 - [X] Tarefa 05
 - [X] Tarefa 06
-- [ ] Tarefa 07
-- [ ] Tarefa 08
+- [X] Tarefa 07
+- [X] Tarefa 08
 - [x] Tarefa 09
 
 ### Finalidade do projeto:
