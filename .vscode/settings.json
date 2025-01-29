@@ -35,10 +35,14 @@
     "raspberry-pi-pico.cmakeAutoConfigure": true,
     "raspberry-pi-pico.useCmakeTools": false,
     "raspberry-pi-pico.cmakePath": "${HOME}/.pico-sdk/cmake/v3.29.9/bin/cmake",
+<<<<<<< HEAD
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "files.associations": {
         "*.c": "c",
         "animacao_matriz.pio.h": "c",
         "guitarhero.h": "c"
     }
+=======
+    "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja"
+>>>>>>> b13576e8165d356062d2b789ce7f73c6202e8d6a
 }
