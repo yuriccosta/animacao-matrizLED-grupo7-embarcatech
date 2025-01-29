@@ -17,7 +17,6 @@
 #include "snake.h"
 #include "guitarhero.h"
 #include "game.h"
-
 #include "pingpong.h"
 
 // Definições de constantes
@@ -350,6 +349,69 @@ void pingpong_pio(int pingpong[][25], PIO pio, uint sm) {
 
 
 
+void snake2_pio(int snake[][25], PIO pio, uint sm) {
+    uint32_t valor_led;
+    for (int16_t k = 0; k < 15; k++) {
+        for (int i = 0; i < LED_COUNT; i++) {
+                switch (snake[k][ordem[24-i]]) {
+                    case 0: 
+                        valor_led = matrix_rgb(0.0, 0.0, 0.0); 
+                        break;
+                    case 1: 
+                        valor_led = matrix_rgb(0.0, 1, 0.0); //vermelho
+                        break;
+                    case 2:
+                        valor_led = matrix_rgb(1, 0.0, 0.0); //azul
+                        break;
+                    case 3:
+                        valor_led = matrix_rgb(0.0, 0.0, 1); //verde
+                        break;
+                    case 4:
+                        valor_led = matrix_rgb(1, 1, 1); //branco
+                        break;
+                    case 5:
+                        valor_led = matrix_rgb(0, 1, 0.5); //laranja
+                        break;
+                    case 6:
+                        valor_led = matrix_rgb(0, 1, 1); //amarelo
+                        break;
+                    case 7:
+                        valor_led = matrix_rgb(1, 1, 0); //roxo
+                        break;
+                }
+                pio_sm_put_blocking(pio, sm, valor_led);
+
+        }
+        imprimir_binario(valor_led);
+
+        if(k == 6){
+            set_buzzer_tone(BUZZER1, 660);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);
+        } else if(k == 11){
+            set_buzzer_tone(BUZZER1, 660);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);        
+        } else if(k == 13){
+            set_buzzer_tone(BUZZER1, 440);
+            sleep_ms(50);
+            set_buzzer_tone(BUZZER1, 380);
+            sleep_ms(50);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);
+        } 
+        else {
+            set_buzzer_tone(BUZZER1, 440);
+            sleep_ms(100);
+            stop_buzzer(BUZZER1);
+            sleep_ms(frame_delay - 100);                                
+        }
+    }
+    acende_matrizLEDS(0, 0, 0, 0, pio, sm); // Apaga todos os LEDs
+}
+
 // Define os pinos do teclado
 uint columns[4] = {4, 3, 2, 1}; // Colunas conectadas aos GPIOs
 uint rows[4] = {9, 8, 6, 5};    // Linhas conectadas aos GPIOs
@@ -478,7 +540,7 @@ int main() {
                     pingpong_pio(pingpong, pio, sm);
                     break;
                 case '5':
-
+                    snake2_pio(snake2, pio, sm);
                     break;
                 case '6':
 
