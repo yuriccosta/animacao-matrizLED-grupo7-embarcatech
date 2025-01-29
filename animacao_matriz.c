@@ -17,7 +17,6 @@
 #include "snake.h"
 #include "guitarhero.h"
 #include "game.h"
-
 #include "pingpong.h"
 
 // Definições de constantes
