@@ -12,10 +12,10 @@
 #include "pico/bootrom.h"
 
 #include "animacao_matriz.pio.h" // Biblioteca PIO para controle de LEDs WS2818B
+
 #include "tetris.h"
-
+#include "snake.h"
 #include "guitarhero.h"
-
 #include "game.h"
 
 
@@ -404,7 +404,7 @@ int main() {
                     desenho_pio(desenho, pio, sm);
                     break;
                 case '2':
-                    desenho_pio(desenho2, pio, sm);
+                    desenho_pio(snake, pio, sm);
                     break;
                 case '3':
                     guitar_pio(guitar, pio, sm);
